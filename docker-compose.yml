@@ -1,0 +1,42 @@
+version: '3'
+services:
+  jenkins:
+    image: jenkins:latest
+    container_name: jenkins
+    ports:
+      - 8080:8080
+    privileged: true
+    volumes:
+        - /opt/jenkins_bkp:/var/jenkins_home
+        - /var/run/docker.sock:/var/run/docker.sock
+  elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+        container_name: elasticsearch
+        environment:
+            - discovery.type=single-node
+            - ES_JAVA_OPTS="-Xms1g -Xmx1g"
+        volumes:
+            - /opt/elasticsearch:/usr/share/elasticsearch/data
+        ports:
+            - 9200:9200
+        networks:
+            - elastic
+        labels:
+            - co.elastic.logs/module=elasticsearch
+            - co.elastic.metrics/module=elasticsearch
+  kibana:
+        image: docker.elastic.co/kibana/kibana:7.7.0
+        container_name: kibana
+        ports:
+            - 5601:5601
+        depends_on:
+            - elasticsearch
+        environment:
+            ELASTICSEARCH_URL: http://elasticsearch:9200
+            ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+        networks:
+            - elastic
+networks:
+    elastic:
+      driver: bridge
+  
