@@ -5,6 +5,7 @@ services:
     container_name: jenkins
     ports:
       - 8080:8080
+      - 50000:50000
     privileged: true
     command: bash -c "/usr/local/bin/install-plugins.sh  gitlab-plugin"
     volumes:
