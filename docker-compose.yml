@@ -1,24 +1,22 @@
 version: '3'
 services:
   jenkins:
-    image: jenkins:latest
+    image: jenkins/jenkins
     container_name: jenkins
     ports:
       - 8080:8080
     privileged: true
-    command: wget -o /var/jenkins_home/plugins https://mirrors.tuna.tsinghua.edu.cn/jenkins/plugins/gitlab-plugin/1.5.20/gitlab-plugin.hpi
-    command: service jenkins restart
+    command: bash -c "/usr/local/bin/install-plugins.sh  gitlab-plugin"
     volumes:
-        - /opt/jenkins_bkp:/var/jenkins_home
+        - jenkins_bkp:/var/jenkins_home
         - /var/run/docker.sock:/var/run/docker.sock
   elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
         container_name: elasticsearch
         environment:
             - discovery.type=single-node
-            - ES_JAVA_OPTS="-Xms1g -Xmx1g"
         volumes:
-            - /opt/elasticsearch:/usr/share/elasticsearch/data
+            - elasticsearch:/usr/share/elasticsearch/data
         ports:
             - 9200:9200
         networks:
@@ -38,6 +36,9 @@ services:
             ELASTICSEARCH_HOSTS: http://elasticsearch:9200
         networks:
             - elastic
+volumes:
+  jenkins_bkp:
+  elasticsearch:
 networks:
     elastic:
       driver: bridge
