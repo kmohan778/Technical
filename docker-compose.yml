@@ -7,7 +7,6 @@ services:
       - 8080:8080
       - 50000:50000
     privileged: true
-    command: bash -c "/usr/local/bin/install-plugins.sh  gitlab-plugin"
     volumes:
         - jenkins_bkp:/var/jenkins_home
         - /var/run/docker.sock:/var/run/docker.sock
