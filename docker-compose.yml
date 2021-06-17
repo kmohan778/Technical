@@ -8,19 +8,22 @@ services:
       - 50000:50000
     privileged: true
     volumes:
-        - jenkins_log:/var/jenkins_home/jobs/*.log
-        - jenkins_bkp:/var/jenkins_home/
+        - jenkins_log:/var/jenkins_home/
         - /var/run/docker.sock:/var/run/docker.sock
   filebeat:
     image: kmohan778/filebeat
     volumes:
-        - jenkins_log:/var/jenkins_home/jobs/*.log
+        - jenkins_log:/var/jenkins_home/
+    networks:
+        - elastic
   logstash:
     image: logstash:7.13.2
     environment:
       - STDOUT=true
     ports:
       - 5044:5044
+    networks:
+        - elastic
     links:
       - elasticsearch
     depends_on:
@@ -54,7 +57,6 @@ services:
         networks:
             - elastic
 volumes:
-  jenkins_bkp:
   jenkins_log:
   elasticsearch:
 networks:
