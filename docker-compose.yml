@@ -1,15 +1,32 @@
 version: '3'
 services:
   jenkins:
-    image: jenkins/jenkins
+    image: kmohan778/jenkins
     container_name: jenkins
     ports:
       - 8080:8080
       - 50000:50000
     privileged: true
     volumes:
-        - jenkins_bkp:/var/jenkins_home
+        - jenkins_log:/var/jenkins_home/jobs/*.log
+        - jenkins_bkp:/var/jenkins_home/
         - /var/run/docker.sock:/var/run/docker.sock
+  filebeat:
+    image: kmohan778/filebeat
+    volumes:
+        - jenkins_log:/var/jenkins_home/jobs/*.log
+  logstash:
+    image: logstash:7.13.2
+    environment:
+      - STDOUT=true
+    ports:
+      - 5044:5044
+    links:
+      - elasticsearch
+    depends_on:
+       - elasticsearch
+       - kibana
+    command: 'logstash -e "input { beats { port => 5044 } } output { elasticsearch { hosts => elasticsearch } }"'
   elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
         container_name: elasticsearch
@@ -38,6 +55,7 @@ services:
             - elastic
 volumes:
   jenkins_bkp:
+  jenkins_log:
   elasticsearch:
 networks:
     elastic:
