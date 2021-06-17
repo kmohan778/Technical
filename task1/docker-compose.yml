@@ -11,12 +11,14 @@ services:
         - jenkins_log:/var/jenkins_home/
         - /var/run/docker.sock:/var/run/docker.sock
   filebeat:
+    container_name: filebeat
     image: kmohan778/filebeat
     volumes:
         - jenkins_log:/var/jenkins_home/
     networks:
         - elastic
   logstash:
+    container_name: logstash
     image: logstash:7.13.2
     environment:
       - STDOUT=true
