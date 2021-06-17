@@ -5,3 +5,6 @@
    2. Visualizing logs by using Kibana.
 
 
+## [TASK4](https://github.com/kmohan778/Technical/tree/main/task4)
+   1. Python script for replacing lowest numbers.
+   2. 
