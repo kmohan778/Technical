@@ -1,4 +1,4 @@
-# Task1:
+# Task 1:
 
 ## Overview:
 1. Provisioned Jenkins as container with pre-installed Gitlab plugin.
