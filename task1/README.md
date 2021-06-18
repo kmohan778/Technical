@@ -1,7 +1,7 @@
 # Task1:
 
 ## Overview:
-1. Provisioned Jenkins as container.
+1. Provisioned Jenkins as container with pre-installed Gitlab plugin.
 2. Provisioned Filebeat as container for collecting Jenkins job logs.
 3. Filebeat will pass the harvested logs to Logstash.
 4. Logstash will ingest the logs sent from Filebeat and parse the logs.
