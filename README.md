@@ -5,7 +5,7 @@
    1. Importing Jenkins logs using Filebeat and Logstash.
    2. Visualizing logs by using Kibana.
 
-## [TASK 3](https://github.com/kmohan778/Technical/tree/main/task3)
+## [TASK 2](https://github.com/kmohan778/Technical/tree/main/task2)
    
    1. Configure ELB to send logs to S3 bucket.
    2. Lambda will trigger on S3 put and import logs to Elasticserach.
