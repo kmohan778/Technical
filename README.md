@@ -10,7 +10,7 @@
    1. Configure ELB to send logs to S3 bucket.
    2. Lambda invocation by S3 put will import logs to Elasticserach.
 
-## [TASK 2](https://github.com/kmohan778/Technical/tree/main/task3)
+## [TASK 3](https://github.com/kmohan778/Technical/tree/main/task3)
 
    1.
 
