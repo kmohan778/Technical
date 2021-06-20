@@ -7,7 +7,7 @@
 
 ## [TASK 3](https://github.com/kmohan778/Technical/tree/main/task3)
    
-   1. Importing ELB logs to S3 bucket.
+   1. Configure ELB to send logs to S3 bucket.
    2. Lambda will trigger on S3 put and import logs to Elasticserach.
 
 ## [TASK 4](https://github.com/kmohan778/Technical/tree/main/task4)
