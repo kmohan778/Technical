@@ -17,5 +17,11 @@
 3. Run ./deploy.sh
 
 ## Images:
-1. Jenkins Console Output: 
-![alt text](https://github.com/kmohan778/Technical/blob/main/Images/Screenshot%202021-06-17%20at%206.03.47%20PM.png "Logo Title Text 1")
+1. ELB logs imported to S3 bucket: 
+![alt text](https://github.com/kmohan778/Technical/blob/main/Images/Screenshot%202021-06-20%20at%209.11.04%20PM.png "Logo Title Text 1")
+2. Logs visualized by Kibana in response to Lambda trigger: 
+![alt text](https://github.com/kmohan778/Technical/blob/main/Images/Screenshot%202021-06-21%20at%208.35.49%20AM.png "Logo Title Text 1")
+3. Kibana index pattern.
+![alt text](https://github.com/kmohan778/Technical/blob/main/Images/Screenshot%202021-06-21%20at%208.36.16%20AM.png "Logo Title Text 1")
+4. Cloudwatch log which represents the lambda invocation and import S3 objects to elasticsearch.
+![alt text](https://github.com/kmohan778/Technical/blob/main/Images/Screenshot%202021-06-21%20at%208.50.10%20AM.png "Logo Title Text 1")
