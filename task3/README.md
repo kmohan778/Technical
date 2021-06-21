@@ -8,6 +8,8 @@
    d) AD connector
 
 
-Image:
-Hybrid Cloud Infrastructure diagram using AWS: 
+## Image:
+ 
+### Hybrid Cloud Infrastructure diagram using AWS: 
+
 ![alt text](https://github.com/kmohan778/Technical/blob/main/Images/Screenshot%202021-06-21%20at%2011.38.51%20AM.png "Logo Title Text 1")
