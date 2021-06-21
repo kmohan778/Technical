@@ -1,12 +1,8 @@
 # Task 3
 
 ## Overview:
-1. Created Hybrid Cloud Infrastructure with below AWS services.
-   a) EC2 Instances
-   b) RDS
-   c) Subnet
-   d) AD connector
-
+1. Created Hybrid Cloud Infrastructure with AWS services.
+  
 
 ## Image:
  
