@@ -13,9 +13,6 @@ Parameters:
   S3BucketName:
     Type: String
     Default: s3-elk-bucket-4c7121
-  KeyName:
-    Type: "AWS::EC2::KeyPair::KeyName"
-    Default: tech
 Mappings: 
   RegionMap: 
     ap-south-1:
@@ -63,7 +60,6 @@ Resources:
   ELKInstance:
     Type: AWS::EC2::Instance
     Properties:
-      KeyName: !Ref KeyName
       InstanceType: !Ref InstanceType
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
       SecurityGroups: 
