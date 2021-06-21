@@ -1,1 +1,211 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t2.medium
+    AllowedValues:
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
+    Description: Enter t2.large, t2.xlarge or t2.2xlarge. Default is t2.medium.
+  S3BucketName:
+    Type: String
+    Default: s3-elk-bucket-4c7121
+  KeyName:
+    Type: "AWS::EC2::KeyPair::KeyName"
+    Default: tech
+Mappings: 
+  RegionMap: 
+    ap-south-1:
+      AMI: ami-0c1a7f89451184c8b
+    us-east-1:
+      AMI: ami-0747bdcabd34c712a
+    us-west-1:
+      AMI: ami-0943382e114f188e8
+    eu-west-1:
+      AMI: ami-0943382e114f188e8
+    us-west-2:
+      AMI: ami-090717c950a5c34d3
+  ZoneMap:
+    ap-south-1:
+      AZs: [ap-south-1a,ap-south-1b,ap-south-1c]
+    eu-west-1:
+      AZs: [eu-west-1a,eu-west-1b,eu-west-1c]
+    us-east-1:
+      AZs: [us-east-1a,us-east-1b,us-east-1c]
+    us-west-2:
+      AZs: [us-west-2a,us-west-2b,us-west-2c]
+    us-west-1:
+      AZs: [us-west-1a,us-west-1b,us-west-1c]
+Resources:
+  NginxInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SecurityGroups:
+        - !Ref NginxSG
+      UserData:
+        'Fn::Base64':
+          !Sub |
+            #!/bin/bash
+            #install nginx
+            sudo apt-get update
+            sudo apt-get install nginx -y
+            sudo service nginx start
+      Tags:
+        - Key: Name
+          Value: Nginx
+        - Key: Type
+          Value: Nginx
+  ELKInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref KeyName
+      InstanceType: !Ref InstanceType
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SecurityGroups: 
+        - !Ref ELKSG
+      UserData:
+        'Fn::Base64':
+          !Sub |
+            #!/bin/bash
+            # install kibana
+            sudo wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+            sudo apt-get install apt-transport-https -y
+            sudo apt-get install openjdk-11-jre-headless
+            sudo echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+            sudo apt-get update && sudo apt-get install kibana elasticsearch -y
+            sudo echo "server.port: 5601" >> /etc/kibana/kibana.yml
+            sudo echo "elasticsearch.hosts: ["http://localhost:9200"]" >> /etc/kibana/kibana.yml
+            sudo echo "server.host: 0.0.0.0" >> /etc/kibana/kibana.yml
+            sudo echo "http.port: 9200" >> /etc/elasticsearch/elasticsearch.yml
+            sudo echo "network.host: 0.0.0.0" >> /etc/elasticsearch/elasticsearch.yml
+            sudo echo "discovery.seed_hosts: [0.0.0.0]" >> /etc/elasticsearch/elasticsearch.yml
+            sudo echo "discovery.type: single-node" >> /etc/elasticsearch/elasticsearch.yml
+            sudo systemctl enable elasticsearch.service
+            sudo systemctl enable kibana.service
+            sudo service kibana restart
+            sudo service elasticsearch restart
+      Tags:
+        - Key: Name
+          Value: ELK
+        - Key: Type
+          Value: ELK
 
+  NginxSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  ELKSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5601
+          ToPort: 5601
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9200
+          ToPort: 9200
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  ELBNginx:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Instances:
+        - !Ref NginxInstance
+      AvailabilityZones: !FindInMap [ZoneMap, !Ref "AWS::Region", AZs]
+      AccessLoggingPolicy:
+        EmitInterval: 5 
+        Enabled: true
+        S3BucketName: !Ref S3Bucket
+        S3BucketPrefix: logs
+      Listeners:
+        - LoadBalancerPort: '80'
+          InstancePort: '80'
+          Protocol: HTTP
+      HealthCheck:
+        Target: HTTP:80/
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '5'
+        Interval: '30'
+        Timeout: '5'
+      Tags:
+        - Key: Name
+          Value: Nginx
+        - Key: Type
+          Value: Nginx
+
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref S3BucketName
+      
+
+  S3BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:*
+            Effect: Allow
+            Resource: !Join [ "", [ "arn:aws:s3:::", !Ref S3Bucket , "/*" ] ]
+            Principal: "*"
+    
+  S3LambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: es/
+      Runtime: python3.8
+      Handler: index.handler
+      FunctionName: esfunction
+      Environment:
+        Variables: 
+          pubip: !GetAtt ELKInstance.PublicIp
+      Events:
+        S3TriggerEvent: 
+          Type: S3
+          Properties: 
+            Bucket: !Ref S3Bucket
+            Events:
+              - s3:ObjectCreated:Put
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 's3:GetObject'
+              Resource:
+                  'Fn::Join':
+                    - ''
+                    - - 'arn:aws:s3:::'
+                      - !Sub '${S3BucketName}/*'           
+
+  LambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    DependsOn: S3LambdaFunction
+    Properties:
+      FunctionName: esfunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref "AWS::AccountId"
+      SourceArn: !Sub 'arn:aws:s3:::${S3BucketName}'
+  
+
+  
